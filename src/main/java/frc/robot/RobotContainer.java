@@ -71,6 +71,7 @@ public class RobotContainer {
 
     driverController.leftTrigger().whileTrue(superstructure.intake());
     driverController.rightTrigger().whileTrue(superstructure.launch());
+    driverController.b().whileTrue(superstructure.eject());
 
     operatorController.leftBumper().whileTrue(superstructure.intake());
     operatorController.rightBumper().whileTrue(superstructure.launch());
