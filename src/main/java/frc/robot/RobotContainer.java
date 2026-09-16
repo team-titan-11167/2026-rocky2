@@ -8,7 +8,6 @@ package frc.robot;
 import static frc.robot.Constants.OperatorConstants.*;
 
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -64,24 +63,20 @@ public class RobotContainer {
         DriveCommands.arcadeDriveNormalized(
             drive,
             () -> {
-              double value = -driverController.getLeftY() * driveScaling;
-              return driverController.leftBumper().getAsBoolean()
-                  ? value
-                  : MathUtil.clamp(value, -0.75, 0.75);
+              return -driverController.getLeftY() * driveScaling;
             },
             () -> {
-              double value = driverController.getRightX() * rotationScaling;
-              return driverController.leftBumper().getAsBoolean()
-                  ? value
-                  : MathUtil.clamp(value, -0.8, 0.8);
+              return driverController.getRightX() * rotationScaling;
             }));
+
+    driverController.leftTrigger().whileTrue(superstructure.intake());
+    driverController.rightTrigger().whileTrue(superstructure.launch());
 
     operatorController.leftBumper().whileTrue(superstructure.intake());
     operatorController.rightBumper().whileTrue(superstructure.launch());
     operatorController.a().whileTrue(superstructure.eject());
     operatorController.b().whileTrue(superstructure.launchFar());
     operatorController.x().whileTrue(superstructure.launchImmediately(true));
-    driverController.rightBumper().whileTrue(wiggler());
 
     superstructure.setDefaultCommand(superstructure.run(superstructure::stop));
   }
