@@ -19,17 +19,17 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "FrontCam";
+  public static String camera0Name = "Rear Camera";
 
   // Measured from the robot center on the floor to the camera optical center.
-  // WPILib: +X forward, +Y left, +Z up. Assumes forward-facing, tilted UP 17.26 deg.
+  // WPILib: +X forward, +Y left, +Z up. Rear-facing, tilted UP 17.26 deg.
   // These approximate measurements must be refined on the real robot.
   public static Transform3d robotToCamera0 =
       new Transform3d(
-          Units.inchesToMeters(12.0),
+          Units.inchesToMeters(-13.0),
           Units.inchesToMeters(-12.0),
           Units.inchesToMeters(6.0),
-          new Rotation3d(0.0, Units.degreesToRadians(-17.26), 0.0));
+          new Rotation3d(0.0, Units.degreesToRadians(-17.26), Math.PI));
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.2;

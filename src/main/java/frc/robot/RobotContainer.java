@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AlignAndShoot;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
@@ -88,6 +89,8 @@ public class RobotContainer {
             () -> {
               return driverController.getRightX() * rotationScaling;
             }));
+
+    driverController.a().whileTrue(new AlignAndShoot(drive, superstructure, vision));
 
     driverController.leftTrigger().whileTrue(superstructure.intake());
     driverController.rightTrigger().whileTrue(superstructure.launch());

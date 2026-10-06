@@ -18,6 +18,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.LinkedList;
@@ -25,6 +26,20 @@ import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
+  private double latestAcceptedTimestamp = Double.NEGATIVE_INFINITY;
+
+  /** Age of the latest usable captured frame, not the last robot loop with a detection. */
+  public double getAcceptedMeasurementAgeSeconds() {
+    return Timer.getFPGATimestamp() - latestAcceptedTimestamp;
+  }
+
+  public boolean hasRecentMeasurement(double maxAgeSeconds) {
+    double age = getAcceptedMeasurementAgeSeconds();
+    boolean connected = false;
+    for (var input : inputs) connected |= input.connected;
+    return connected && age >= 0.0 && age <= maxAgeSeconds;
+  }
+
   private final VisionConsumer consumer;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
@@ -140,6 +155,11 @@ public class Vision extends SubsystemBase {
         if (cameraIndex < cameraStdDevFactors.length) {
           linearStdDev *= cameraStdDevFactors[cameraIndex];
           angularStdDev *= cameraStdDevFactors[cameraIndex];
+        }
+
+        // Do not let future timestamps or out-of-order frames make readiness appear fresh.
+        if (inputs[cameraIndex].connected && observation.timestamp() <= Timer.getFPGATimestamp()) {
+          latestAcceptedTimestamp = Math.max(latestAcceptedTimestamp, observation.timestamp());
         }
 
         // Send vision observation
