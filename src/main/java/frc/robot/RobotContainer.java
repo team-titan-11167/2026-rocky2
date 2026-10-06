@@ -22,11 +22,17 @@ import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.SuperstructureIO;
 import frc.robot.subsystems.superstructure.SuperstructureIOSim;
 import frc.robot.subsystems.superstructure.SuperstructureIOSpark;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /** Declares robot hardware, commands, controls, and autonomous routines. */
 public class RobotContainer {
   private final Drive drive;
+  private final Vision vision;
   private final Superstructure superstructure;
 
   private final CommandXboxController driverController =
@@ -41,14 +47,28 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         drive = new Drive(new DriveIOSpark(), new GyroIO() {});
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(
+                    VisionConstants.camera0Name, VisionConstants.robotToCamera0));
         superstructure = new Superstructure(new SuperstructureIOSpark());
         break;
       case SIM:
-        drive = new Drive(new DriveIOSim(), new GyroIO() {});
+        var driveSim = new DriveIOSim();
+        drive = new Drive(driveSim, new GyroIO() {});
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera0Name,
+                    VisionConstants.robotToCamera0,
+                    driveSim::getSimulationPose));
         superstructure = new Superstructure(new SuperstructureIOSim());
         break;
       default:
         drive = new Drive(new DriveIO() {}, new GyroIO() {});
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         superstructure = new Superstructure(new SuperstructureIO() {});
         break;
     }
