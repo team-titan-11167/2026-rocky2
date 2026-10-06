@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -14,9 +15,9 @@ import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.SuperstructureConstants;
 import frc.robot.subsystems.vision.Vision;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /** Local scoring assist: driver must provide a clear approach near their own hub. */
 public class AlignAndShoot extends Command {
@@ -33,9 +34,7 @@ public class AlignAndShoot extends Command {
   private final Superstructure superstructure;
   private final Vision vision;
   private final Supplier<Optional<DriverStation.Alliance>> alliance;
-  private final LoggedNetworkNumber distanceSetting =
-      new LoggedNetworkNumber("/SmartDashboard/Scoring/DistanceMeters", shootingDistanceMeters);
-  private final double fixedDistance;
+  private final DoubleSupplier distanceSetting;
   private final boolean rearFacing;
   private Translation2d hub;
   private State state = State.ACQUIRE;
@@ -49,13 +48,18 @@ public class AlignAndShoot extends Command {
   private double commandedV;
   private double commandedOmega;
 
-  public AlignAndShoot(Drive drive, Superstructure superstructure, Vision vision) {
-    this(drive, superstructure, vision, DriverStation::getAlliance, Double.NaN, shooterFacesRear);
+  public AlignAndShoot(
+      Drive drive, Superstructure superstructure, Vision vision, DoubleSupplier distanceSetting) {
+    this(
+        drive,
+        superstructure,
+        vision,
+        DriverStation::getAlliance,
+        distanceSetting,
+        shooterFacesRear);
   }
 
-  /**
-   * Explicit calibration/alliance injection for simulation and tests; NaN uses dashboard distance.
-   */
+  /** Explicit calibration/alliance injection for simulation and tests. */
   public AlignAndShoot(
       Drive drive,
       Superstructure superstructure,
@@ -63,11 +67,21 @@ public class AlignAndShoot extends Command {
       Supplier<Optional<DriverStation.Alliance>> alliance,
       double distanceMeters,
       boolean rearFacing) {
+    this(drive, superstructure, vision, alliance, () -> distanceMeters, rearFacing);
+  }
+
+  public AlignAndShoot(
+      Drive drive,
+      Superstructure superstructure,
+      Vision vision,
+      Supplier<Optional<DriverStation.Alliance>> alliance,
+      DoubleSupplier distanceSetting,
+      boolean rearFacing) {
     this.drive = drive;
     this.superstructure = superstructure;
     this.vision = vision;
     this.alliance = alliance;
-    fixedDistance = distanceMeters;
+    this.distanceSetting = distanceSetting;
     this.rearFacing = rearFacing;
     addRequirements(drive, superstructure);
   }
@@ -79,7 +93,12 @@ public class AlignAndShoot extends Command {
     hub = null;
     startedAt = lastTime = maneuverStartedAt = Timer.getFPGATimestamp();
     spinStartedAt = readySince = Double.NaN;
-    distance = Double.isNaN(fixedDistance) ? distanceSetting.get() : fixedDistance;
+    distance = distanceSetting.getAsDouble();
+    SmartDashboard.putString(
+        "Scoring/Active shooting distance",
+        Double.isFinite(distance) ? ShootingDistance.formatDistance(distance) : "Invalid");
+    Logger.recordOutput("Scoring/DistanceSetpointMeters", distance);
+    Logger.recordOutput("Scoring/DistanceSetpointActive", true);
     commandedV = (drive.getLeftVelocityMetersPerSec() + drive.getRightVelocityMetersPerSec()) / 2;
     commandedOmega =
         (drive.getRightVelocityMetersPerSec() - drive.getLeftVelocityMetersPerSec())
@@ -254,6 +273,8 @@ public class AlignAndShoot extends Command {
   public void end(boolean interrupted) {
     drive.stop();
     superstructure.stop();
+    SmartDashboard.putString("Scoring/Active shooting distance", "Idle");
+    Logger.recordOutput("Scoring/DistanceSetpointActive", false);
     Logger.recordOutput("Scoring/Feeding", false);
     Logger.recordOutput("Scoring/State", state == State.ABORT ? "ABORT" : "IDLE");
   }

@@ -8,12 +8,14 @@ package frc.robot;
 import static frc.robot.Constants.OperatorConstants.*;
 
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.AlignAndShoot;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ShootingDistance;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOSim;
@@ -32,6 +34,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /** Declares robot hardware, commands, controls, and autonomous routines. */
 public class RobotContainer {
+  private final ShootingDistance shootingDistance = new ShootingDistance();
   private final Drive drive;
   private final Vision vision;
   private final Superstructure superstructure;
@@ -90,11 +93,16 @@ public class RobotContainer {
               return driverController.getRightX() * rotationScaling;
             }));
 
-    driverController.a().whileTrue(new AlignAndShoot(drive, superstructure, vision));
+    driverController
+        .a()
+        .whileTrue(new AlignAndShoot(drive, superstructure, vision, shootingDistance::getMeters));
 
     driverController.leftTrigger().whileTrue(superstructure.intake());
     driverController.rightTrigger().whileTrue(superstructure.launch());
     driverController.b().whileTrue(superstructure.eject());
+
+    shootingDistance.bindControls(operatorController);
+    SmartDashboard.putString("Scoring/Active shooting distance", "Idle");
 
     operatorController.leftBumper().whileTrue(superstructure.intake());
     operatorController.rightBumper().whileTrue(superstructure.launch());

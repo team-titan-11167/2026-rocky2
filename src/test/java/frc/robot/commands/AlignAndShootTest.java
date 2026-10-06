@@ -121,6 +121,26 @@ class AlignAndShootTest {
   }
 
   @Test
+  void distanceChangesApplyOnlyAfterRestartingTheAssist() {
+    double[] selected = {shootingDistanceMeters};
+    command =
+        new AlignAndShoot(
+            drive, shooter, vision, () -> Optional.of(Alliance.Blue), () -> selected[0], false);
+    reachShooting();
+    selected[0] += 4 * shootingDistanceStepMeters;
+    tick(true);
+    assertEquals(AlignAndShoot.State.SHOOT, command.getState());
+    assertNotEquals(0, shooterIO.feeder);
+    assertEquals(0, driveIO.left);
+    command.end(true);
+    command.initialize();
+    tick(true);
+    assertEquals(AlignAndShoot.State.APPROACH, command.getState());
+    assertEquals(0, shooterIO.feeder);
+    assertTrue(driveIO.left < 0 && driveIO.right < 0);
+  }
+
+  @Test
   void rotatingInPlaceImmediatelyStopsFeedingEvenWithZeroAverageSpeed() {
     reachShooting();
     driveIO.measuredLeft = -0.2;
