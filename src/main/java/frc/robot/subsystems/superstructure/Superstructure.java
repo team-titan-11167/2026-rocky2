@@ -93,6 +93,20 @@ public class Superstructure extends SubsystemBase {
         .andThen(runRollers(launchFeederVolts, launcherVolts));
   }
 
+  /** Direct output for a coordinating command that requires this subsystem. */
+  public void prepareAndFeed(boolean feed) {
+    io.setIntakeLauncherVoltage(launchLauncherVolts.get());
+    io.setFeederVoltage(feed ? launchFeederVolts.get() : 0.0);
+  }
+
+  /** Both counter-rotating launcher rollers must exceed the calibrated minimum speed. */
+  public boolean isLauncherReady(double minimumRadPerSec) {
+    return Double.isFinite(inputs.leftIntakeLauncherVelocityRadPerSec)
+        && Double.isFinite(inputs.rightIntakeLauncherVelocityRadPerSec)
+        && Math.abs(inputs.leftIntakeLauncherVelocityRadPerSec) >= minimumRadPerSec
+        && Math.abs(inputs.rightIntakeLauncherVelocityRadPerSec) >= minimumRadPerSec;
+  }
+
   public void stop() {
     io.setFeederVoltage(0.0);
     io.setIntakeLauncherVoltage(0.0);
