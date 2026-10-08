@@ -26,9 +26,9 @@ public class VisionConstants {
   // These approximate measurements must be refined on the real robot.
   public static Transform3d robotToCamera0 =
       new Transform3d(
-          Units.inchesToMeters(-13.0),
-          Units.inchesToMeters(-12.0),
-          Units.inchesToMeters(6.0),
+          Units.inchesToMeters(-11.5),
+          Units.inchesToMeters(11.375),
+          Units.inchesToMeters(8),
           new Rotation3d(0.0, Units.degreesToRadians(-17.26), Math.PI));
 
   // Basic filtering thresholds

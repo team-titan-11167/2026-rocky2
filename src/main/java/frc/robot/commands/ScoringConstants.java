@@ -7,10 +7,10 @@ import frc.robot.subsystems.vision.VisionConstants;
 /** Initial commissioning values; distances refer to robot center and hub center. */
 public final class ScoringConstants {
   // User-calibrated radius: eight feet, robot center to hub center.
-  public static final double shootingDistanceMeters = 8.0 * 0.3048;
-  public static final double shootingDistanceStepMeters = 3.0 * 0.0254;
+  public static final double shootingDistanceMeters = 5.0 * 0.3048;
+  public static final double shootingDistanceStepMeters = 2.5 * 0.0254;
   // Provisional adjustment limits around the default; validate on the robot during calibration.
-  public static final double minimumShootingDistanceMeters = 6.0 * 0.3048;
+  public static final double minimumShootingDistanceMeters = 2.0 * 0.3048;
   public static final double maximumShootingDistanceMeters = 10.0 * 0.3048;
   public static final boolean shooterFacesRear = true;
   // Initial threshold only: measure both roller speeds during successful stationary shots.
