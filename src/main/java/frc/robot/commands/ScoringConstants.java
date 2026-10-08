@@ -14,7 +14,7 @@ public final class ScoringConstants {
   public static final double maximumShootingDistanceMeters = 10.0 * 0.3048;
   public static final boolean shooterFacesRear = true;
   // Initial threshold only: measure both roller speeds during successful stationary shots.
-  public static final double minimumLauncherRadPerSec = 300.0;
+  public static final double minimumLauncherRadPerSec = 510.0;
   public static final double distanceToleranceMeters = 0.10;
   public static final double headingToleranceRad = Math.toRadians(2.0);
   public static final double approachHeadingRad = Math.toRadians(15.0);
