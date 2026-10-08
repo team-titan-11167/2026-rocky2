@@ -56,7 +56,7 @@ public class AlignAndShoot extends Command {
         vision,
         DriverStation::getAlliance,
         distanceSetting,
-        !shooterFacesRear);
+        shooterFacesRear);
   }
 
   /** Explicit calibration/alliance injection for simulation and tests. */
