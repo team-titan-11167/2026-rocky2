@@ -139,9 +139,17 @@ public class RobotContainer {
     return DriveCommands.arcadeDriveNormalized(drive, () -> xSpeed, () -> zRotation);
   }
 
+  private Command metersAuto(double targetMeters) {
+    // Who knows, maybe it works, maybe it doesn't...  -Lars
+    double initalLeftDistanceMeters = drive.getLeftPositionMeters();
+    return autoDrive(0.5, 0.0)
+        .until(() -> ((drive.getLeftPositionMeters() - initalLeftDistanceMeters) >= targetMeters));
+  }
+
   private Command exampleAuto() {
     return Commands.sequence(
-        autoDrive(0.5, 0.0).withTimeout(0.9),
+        metersAuto(1.0),
+        // autoDrive(0.5, 0.0).withTimeout(0.9),
         superstructure.launch().withTimeout(8.0),
         autoDrive(-0.5, 0.0).withTimeout(0.1),
         autoDrive(0.5, 0.0).withTimeout(0.1),
