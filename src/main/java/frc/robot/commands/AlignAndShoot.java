@@ -99,6 +99,8 @@ public class AlignAndShoot extends Command {
         Double.isFinite(distance) ? ShootingDistance.formatDistance(distance) : "Invalid");
     Logger.recordOutput("Scoring/DistanceSetpointMeters", distance);
     Logger.recordOutput("Scoring/DistanceSetpointActive", true);
+    Logger.recordOutput("Scoring/Omega", 0);
+    Logger.recordOutput("Scoring/V", 0);
     commandedV = (drive.getLeftVelocityMetersPerSec() + drive.getRightVelocityMetersPerSec()) / 2;
     commandedOmega =
         (drive.getRightVelocityMetersPerSec() - drive.getLeftVelocityMetersPerSec())
@@ -185,7 +187,7 @@ public class AlignAndShoot extends Command {
     double v = 0;
     double omega = 0;
     if (state == State.ALIGN || state == State.APPROACH) {
-      omega = boundedSpeed(headingError, headingKp, maxAngularSpeed, maxAngularAcceleration);
+      omega = -boundedSpeed(headingError, headingKp, maxAngularSpeed, maxAngularAcceleration);
       if (state == State.APPROACH) {
         double headingScale = MathUtil.clamp(1 - Math.abs(headingError) / realignHeadingRad, 0, 1);
         v =
@@ -194,6 +196,8 @@ public class AlignAndShoot extends Command {
                 * (rearFacing ? -1 : 1);
       }
     }
+    Logger.recordOutput("Scoring/Omega", omega);
+    Logger.recordOutput("Scoring/V", v);
     applyDrive(v, omega, dt);
     boolean stopped =
         Math.abs(drive.getLeftVelocityMetersPerSec()) <= stoppedWheelSpeed
